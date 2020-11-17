@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 5s
+scrape_configs:
+  - job_name: grafana
+    static_configs:
+    - targets:
+      - grafana:3000
+  - job_name: influxdb
+    static_configs:
+    - targets:
+      - influxdb:8086
+  - job_name: prometheus
+    static_configs:
+    - targets:
+      - prometheus:9090
+
+remote_write:
+  - url: "http://prometheus:prometheus_password@influxdb:8086/api/v1/prom/write?db=prometheus"
+
+remote_read:
+  - url: "http://prometheus:prometheus_password@influxdb:8086/api/v1/prom/read?db=prometheus"

@@ -1,0 +1,64 @@
+version: '3'
+services:
+  influxdb:
+    image: influxdb:1.8
+    ports:
+      - 8086:8086
+      - 8088:8088
+    volumes:
+      - ./configs/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
+      - ./configs/influxdb/prometheus.iql:/docker-entrypoint-initdb.d/prometheus.iql:ro
+      - influxdb-data:/var/lib/influxdb
+    environment:
+      - INFLUXDB_DB=prometheus
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin_password
+      - INFLUXDB_USER=prometheus
+      - INFLUXDB_USER_PASSWORD=prometheus_password
+      - INFLUXDB_READ_USER=grafana
+      - INFLUXDB_READ_USER_PASSWORD=grafana_password
+  prometheus:
+    image: prom/prometheus:v2.22.1
+    ports:
+      - 9090:9090
+    volumes:
+      - ./configs/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+    command: [
+      "--config.file=/etc/prometheus/prometheus.yaml",
+      "--log.level=error",
+      "--storage.tsdb.path=/prometheus",
+      "--storage.tsdb.retention=1h",
+      "--web.enable-admin-api",
+    ]
+    depends_on:
+      - influxdb
+
+  grafana:
+    image: grafana/grafana:7.3.1
+    ports:
+      - 3000:3000
+    volumes:
+      - ./configs/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - grafana-data:/var/lib/grafana
+  loki:
+    image: grafana/loki:2.0.0
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data:/loki
+      - ./configs/loki/loki.yaml:/etc/loki/loki-config.yaml
+    command: -config.file=/etc/loki/loki-config.yaml
+  promtail:
+    image: grafana/promtail:2.0.0
+    volumes:
+      - /var/log:/var/log:ro
+      - ./configs/promtail/promtail.yaml:/etc/promtail/promtail-config.yaml
+    command: -config.file=/etc/promtail/promtail-config.yaml
+
+volumes:
+  loki-data:
+    external: true
+  grafana-data:
+    external: true
+  influxdb-data:
+    external: true
