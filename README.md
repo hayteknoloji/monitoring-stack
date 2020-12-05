@@ -1,5 +1,5 @@
 # HAY TEKNOLOJI MONITORING STACK
-Once we searched template for building a monitoring stack but can not find so we built our own. This repository can be used for experiments with Prometheus, Influxdb, Grafana, and Loki stack.
+This repository can be used for experiments with Prometheus, Influxdb, Grafana, and Loki stack.
 
 ## Usage
 First, volumes should be created;
